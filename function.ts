@@ -2,7 +2,6 @@ import { ethers, Contract, JsonRpcProvider } from 'ethers';
 import * as dotenv from 'dotenv';
 dotenv.config();
 
-// Contract ABI - You'll need to replace this with your actual ABI
 const NFT_AUCTION_ABI =[
 	{
 		"inputs": [],
