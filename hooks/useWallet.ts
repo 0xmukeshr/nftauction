@@ -24,6 +24,12 @@ export const useWallet = create<WalletStore>()(
       error: null,
 
       connectWallet: async () => {
+        // Skip wallet connection on server side
+        if (typeof window === 'undefined') {
+          console.warn('Wallet connection not available on server side');
+          return;
+        }
+
         set({ isLoading: true, error: null });
         
         try {
@@ -45,6 +51,8 @@ export const useWallet = create<WalletStore>()(
           // Select first account by default
           const selectedAccount = accounts[0];
           const balance = await talismanService.getBalance(selectedAccount.address);
+
+          console.log("Selected account :", selectedAccount.address);
 
           set({
             isConnected: true,
@@ -80,6 +88,11 @@ export const useWallet = create<WalletStore>()(
       },
 
       selectAccount: async (account: WalletAccount) => {
+        // Skip account selection on server side
+        if (typeof window === 'undefined') {
+          return;
+        }
+
         set({ isLoading: true });
         
         try {
@@ -89,6 +102,7 @@ export const useWallet = create<WalletStore>()(
             balance: talismanService.formatBalance(balance),
             isLoading: false,
           });
+          console.log("Account selected :", account);
         } catch (error) {
           console.error('Failed to select account:', error);
           set({ isLoading: false });
@@ -96,6 +110,11 @@ export const useWallet = create<WalletStore>()(
       },
 
       refreshBalance: async () => {
+        // Skip balance refresh on server side
+        if (typeof window === 'undefined') {
+          return;
+        }
+
         const { selectedAccount } = get();
         if (!selectedAccount) return;
 

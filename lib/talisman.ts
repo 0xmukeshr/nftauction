@@ -1,19 +1,60 @@
-import { web3Enable, web3Accounts, web3FromAddress } from '@polkadot/extension-dapp';
-import { ApiPromise, WsProvider } from '@polkadot/api';
-import { cryptoWaitReady } from '@polkadot/util-crypto';
-import { POLKADOT_CONFIG } from './constants';
+// Dynamic imports for browser-only packages
+let web3Enable: any, web3Accounts: any, web3FromAddress: any;
+let ApiPromise: any, WsProvider: any, cryptoWaitReady: any;
+
+if (typeof window !== 'undefined') {
+  // Only load these modules on the client side
+  import('@polkadot/extension-dapp').then(module => {
+    web3Enable = module.web3Enable;
+    web3Accounts = module.web3Accounts;
+    web3FromAddress = module.web3FromAddress;
+  });
+  
+  import('@polkadot/api').then(module => {
+    ApiPromise = module.ApiPromise;
+    WsProvider = module.WsProvider;
+  });
+  
+  import('@polkadot/util-crypto').then(module => {
+    cryptoWaitReady = module.cryptoWaitReady;
+  });
+}
+
+import { PASSET_HUB_CONFIG } from './constants';
 import type { WalletAccount } from '@/types/wallet';
 
 class TalismanService {
-  private api: ApiPromise | null = null;
-  private provider: WsProvider | null = null;
+  private api: any = null;
+  private provider: any = null;
+  private isInitialized = false;
 
   async initialize(): Promise<boolean> {
+    // Skip initialization on server side
+    if (typeof window === 'undefined') {
+      console.warn('Talisman service cannot be initialized on server side');
+      return false;
+    }
+
+    if (this.isInitialized) {
+      return true;
+    }
+
     try {
+      // Wait for dynamic imports to complete
+      if (!cryptoWaitReady || !ApiPromise || !WsProvider) {
+        await new Promise(resolve => setTimeout(resolve, 100)); // Wait a bit for imports
+      }
+
+      if (!cryptoWaitReady || !ApiPromise || !WsProvider) {
+        console.error('Required Polkadot modules not loaded');
+        return false;
+      }
+
       await cryptoWaitReady();
       
-      this.provider = new WsProvider(POLKADOT_CONFIG.ASSET_HUB_ENDPOINT);
+      this.provider = new WsProvider(PASSET_HUB_CONFIG.RPC_ENDPOINT.replace('https://', 'wss://'));
       this.api = await ApiPromise.create({ provider: this.provider });
+      this.isInitialized = true;
       
       return true;
     } catch (error) {
@@ -26,6 +67,10 @@ class TalismanService {
     // Check if we're in a browser environment
     if (typeof window === 'undefined') {
       throw new Error('Talisman wallet can only be accessed in a browser environment');
+    }
+
+    if (!web3Enable) {
+      throw new Error('Polkadot extension modules not loaded');
     }
 
     try {
@@ -56,6 +101,11 @@ class TalismanService {
       return [];
     }
 
+    if (!web3Accounts) {
+      console.warn('web3Accounts not available');
+      return [];
+    }
+
     try {
       const accounts = await web3Accounts();
       
@@ -80,13 +130,13 @@ class TalismanService {
   }
 
   async getBalance(address: string): Promise<string> {
-    if (!this.api) {
-      throw new Error('API not initialized');
-    }
-    
     try {
-      const { data: { free } } = await this.api.query.system.account(address);
-      return this.api.createType('Balance', free).toHuman();
+      // Use ethers to get balance from Passet Hub (Ethereum-compatible RPC)
+      const { ethers } = await import('ethers');
+      const provider = new ethers.JsonRpcProvider(PASSET_HUB_CONFIG.RPC_ENDPOINT);
+      const balance = await provider.getBalance(address);
+      const formatted = ethers.formatEther(balance);
+      return formatted;
     } catch (error) {
       console.error('Failed to get balance:', error);
       return '0';
@@ -104,6 +154,10 @@ class TalismanService {
     // Check if we're in a browser environment
     if (typeof window === 'undefined') {
       throw new Error('Transaction signing can only be performed in a browser environment');
+    }
+    
+    if (!web3FromAddress) {
+      throw new Error('web3FromAddress not available');
     }
     
     try {

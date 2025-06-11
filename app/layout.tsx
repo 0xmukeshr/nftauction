@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import { Header } from '@/components/layout/Header';
 import { Toaster } from 'sonner';
+import { ContractInitializer } from '@/components/ContractInitializer';
 
 const inter = Inter({ 
   subsets: ['latin'],
@@ -11,20 +12,20 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: 'PolkaNFT - Premium NFT Marketplace on Polkadot',
-  description: 'Discover, create, and trade NFTs on the Polkadot Asset Hub. The premier destination for digital collectibles.',
-  keywords: ['NFT', 'Polkadot', 'Blockchain', 'Digital Art', 'Collectibles'],
-  authors: [{ name: 'PolkaNFT Team' }],
+  title: 'PassetNFT - Premium NFT Marketplace on Passet Hub',
+  description: 'Discover, create, and trade NFTs on the Passet Hub testnet. The premier destination for digital collectibles.',
+  keywords: ['NFT', 'Passet Hub', 'Blockchain', 'Digital Art', 'Collectibles', 'PAS'],
+  authors: [{ name: 'PassetNFT Team' }],
   openGraph: {
-    title: 'PolkaNFT - Premium NFT Marketplace',
-    description: 'Discover, create, and trade NFTs on Polkadot Asset Hub',
+    title: 'PassetNFT - Premium NFT Marketplace',
+    description: 'Discover, create, and trade NFTs on Passet Hub testnet',
     type: 'website',
     locale: 'en_US',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'PolkaNFT - Premium NFT Marketplace',
-    description: 'Discover, create, and trade NFTs on Polkadot Asset Hub',
+    title: 'PassetNFT - Premium NFT Marketplace',
+    description: 'Discover, create, and trade NFTs on Passet Hub testnet',
   },
   viewport: 'width=device-width, initial-scale=1',
   robots: 'index, follow',
@@ -60,6 +61,7 @@ export default function RootLayout({
         </div>
 
         <div className="relative z-10">
+          <ContractInitializer />
           <Header />
           <main className="min-h-screen">
             {children}

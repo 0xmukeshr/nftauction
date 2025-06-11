@@ -1039,6 +1039,9 @@ const NFT_AUCTION_ABI =[
 // Contract configuration
 const CONTRACT_ADDRESS = '0x507E13c9924adA6281e02C56bc135d224a3D8c6E';
 const RPC_URL = 'https://testnet-passet-hub-eth-rpc.polkadot.io';
+const CHAIN_ID = 420420421;
+const NETWORK_NAME = 'PassetHub';
+const BLOCK_EXPLORER = 'https://blockscout-passet-hub.parity-testnet.parity.io/';
 
 // Types
 export interface Auction {

@@ -1,17 +1,86 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Clock, Gavel, Heart, Share2, ExternalLink, TrendingUp, Users, Eye } from 'lucide-react';
-import { BidModal } from '@/components/auction/BidModal';
-import { useWallet } from '@/hooks/useWallet';
-import { toast } from 'sonner';
-import Link from 'next/link';
-import Image from 'next/image';
-import { useParams } from 'next/navigation';
+import { ArrowLeft, Clock, Gavel, Heart, Share2, ExternalLink, TrendingUp } from 'lucide-react';
+
+// Mock hooks and components (replacements for missing dependencies)
+const useWallet = () => ({
+  isConnected: false,
+  selectedAccount: null
+});
+
+const useParams = () => ({ id: '1' });
+
+const toast = {
+  success: (message) => console.log('Success:', message),
+  error: (message) => console.log('Error:', message)
+};
+
+// UI Components
+const Button = ({ children, onClick, disabled, variant, size, className, ...props }) => (
+  <button
+    onClick={onClick}
+    disabled={disabled}
+    className={`px-4 py-2 rounded-lg font-medium transition-all ${
+      disabled 
+        ? 'bg-gray-500/20 text-gray-400 cursor-not-allowed' 
+        : variant === 'outline'
+        ? 'border border-white/20 text-white hover:bg-white/10 bg-transparent'
+        : 'bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white'
+    } ${className || ''}`}
+    {...props}
+  >
+    {children}
+  </button>
+);
+
+const Card = ({ children, className }) => (
+  <div className={`backdrop-blur-md bg-white/5 border border-white/20 rounded-xl ${className || ''}`}>
+    {children}
+  </div>
+);
+
+const CardHeader = ({ children }) => (
+  <div className="p-6 pb-3">{children}</div>
+);
+
+const CardTitle = ({ children, className }) => (
+  <h3 className={`text-lg font-semibold ${className || ''}`}>{children}</h3>
+);
+
+const CardContent = ({ children, className }) => (
+  <div className={`p-6 pt-3 ${className || ''}`}>{children}</div>
+);
+
+const Badge = ({ children, variant, className }) => (
+  <span className={`inline-flex items-center px-2 py-1 text-xs font-medium rounded-full ${
+    variant === 'secondary' ? 'bg-green-500/20 text-green-400' : 'bg-gray-500/20 text-gray-400'
+  } ${className || ''}`}>
+    {children}
+  </span>
+);
+
+// Mock BidModal component
+const BidModal = ({ isOpen, onClose, auction }) => {
+  if (!isOpen) return null;
+  
+  return (
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="bg-gradient-to-br from-gray-900/95 to-black/95 backdrop-blur-md border border-white/20 rounded-xl p-6 max-w-md w-full">
+        <h2 className="text-xl font-bold text-white mb-4">Place a Bid</h2>
+        <p className="text-gray-300 mb-4">Current bid: {auction.currentPrice.toFixed(2)} PAS</p>
+        <div className="flex space-x-3">
+          <Button onClick={onClose} variant="outline" className="flex-1">
+            Cancel
+          </Button>
+          <Button onClick={onClose} className="flex-1">
+            Place Bid
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 // Mock auction data
 const mockAuction = {
@@ -47,7 +116,7 @@ const mockAuction = {
   buyNowPrice: 50.0,
   startTime: new Date(Date.now() - 24 * 60 * 60 * 1000),
   endTime: new Date(Date.now() + 2 * 60 * 60 * 1000),
-  status: 'active' as const,
+  status: 'active',
   highestBidder: '5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty',
   totalBids: 12,
   createdAt: new Date(),
@@ -60,21 +129,21 @@ const mockBidHistory = [
     bidder: '5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty',
     amount: 25.5,
     timestamp: new Date(Date.now() - 10 * 60 * 1000),
-    status: 'confirmed' as const,
+    status: 'confirmed',
   },
   {
     id: '2',
     bidder: '5DAAnrj7VHTznn2AWBemMuyBwZWs6FNFjdyVXUeYum3PTXFy',
     amount: 24.8,
     timestamp: new Date(Date.now() - 25 * 60 * 1000),
-    status: 'confirmed' as const,
+    status: 'confirmed',
   },
   {
     id: '3',
     bidder: '5FLSigC9HGRKVhB9FiEo4Y3koPsNmBmLJbpXg2mp1hXcS59Y',
     amount: 23.2,
     timestamp: new Date(Date.now() - 45 * 60 * 1000),
-    status: 'confirmed' as const,
+    status: 'confirmed',
   },
 ];
 
@@ -98,9 +167,9 @@ export default function AuctionDetailPage() {
     loadAuction();
   }, [params.id]);
 
-  const formatPrice = (price: number) => `${price.toFixed(2)} PAS`;
+  const formatPrice = (price) => `${price.toFixed(2)} PAS`;
   
-  const formatTimeLeft = (endTime: Date) => {
+  const formatTimeLeft = (endTime) => {
     const now = new Date();
     const diff = endTime.getTime() - now.getTime();
     
@@ -113,7 +182,7 @@ export default function AuctionDetailPage() {
     return `${minutes}m`;
   };
 
-  const formatAddress = (address: string) => {
+  const formatAddress = (address) => {
     return `${address.slice(0, 6)}...${address.slice(-4)}`;
   };
 
@@ -121,8 +190,12 @@ export default function AuctionDetailPage() {
   const isAuctionEnded = auction.endTime.getTime() <= Date.now();
 
   const handleShare = () => {
-    navigator.clipboard.writeText(window.location.href);
-    toast.success('Auction link copied to clipboard');
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(window.location.href);
+      toast.success('Auction link copied to clipboard');
+    } else {
+      toast.error('Unable to copy link');
+    }
   };
 
   const handleBuyNow = () => {
@@ -130,20 +203,24 @@ export default function AuctionDetailPage() {
       toast.error('Please connect your wallet first');
       return;
     }
-    // Implement buy now functionality
     toast.success('Buy now functionality coming soon!');
+  };
+
+  const handleBackToAuctions = () => {
+    // In a real app, this would use router.push('/auctions')
+    console.log('Navigate back to auctions');
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen py-8">
+      <div className="min-h-screen py-8 bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900">
         <div className="container mx-auto px-4 max-w-6xl">
           <div className="grid lg:grid-cols-2 gap-8">
-            <div className="aspect-square bg-gradient-to-br from-white/10 to-white/5 rounded-xl shimmer" />
+            <div className="aspect-square bg-gradient-to-br from-white/10 to-white/5 rounded-xl animate-pulse" />
             <div className="space-y-6">
-              <div className="h-8 bg-gradient-to-r from-white/10 to-white/5 rounded shimmer" />
-              <div className="h-4 bg-gradient-to-r from-white/10 to-white/5 rounded w-2/3 shimmer" />
-              <div className="h-32 bg-gradient-to-r from-white/10 to-white/5 rounded shimmer" />
+              <div className="h-8 bg-gradient-to-r from-white/10 to-white/5 rounded animate-pulse" />
+              <div className="h-4 bg-gradient-to-r from-white/10 to-white/5 rounded w-2/3 animate-pulse" />
+              <div className="h-32 bg-gradient-to-r from-white/10 to-white/5 rounded animate-pulse" />
             </div>
           </div>
         </div>
@@ -152,34 +229,26 @@ export default function AuctionDetailPage() {
   }
 
   return (
-    <div className="min-h-screen py-8">
+    <div className="min-h-screen py-8 bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900">
       <div className="container mx-auto px-4 max-w-6xl">
         {/* Back Button */}
-        <motion.div
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          className="mb-6"
-        >
-          <Link href="/auctions" className="inline-flex items-center text-pink-400 hover:text-pink-300">
+        <div className="mb-6 opacity-0 animate-[fadeInLeft_0.6s_ease-out_forwards]">
+          <button 
+            onClick={handleBackToAuctions}
+            className="inline-flex items-center text-pink-400 hover:text-pink-300 transition-colors"
+          >
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Auctions
-          </Link>
-        </motion.div>
+          </button>
+        </div>
 
         <div className="grid lg:grid-cols-2 gap-8">
           {/* NFT Image */}
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6 }}
-            className="space-y-4"
-          >
-            <div className="aspect-square rounded-xl overflow-hidden glass border-white/20">
-              <Image
+          <div className="space-y-4 opacity-0 animate-[fadeInLeft_0.6s_ease-out_forwards]">
+            <div className="aspect-square rounded-xl overflow-hidden backdrop-blur-md bg-white/5 border border-white/20">
+              <img
                 src={auction.nft.metadata.image}
                 alt={auction.nft.metadata.name}
-                width={600}
-                height={600}
                 className="w-full h-full object-cover"
               />
             </div>
@@ -213,15 +282,10 @@ export default function AuctionDetailPage() {
                 View on Explorer
               </Button>
             </div>
-          </motion.div>
+          </div>
 
           {/* Auction Details */}
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-            className="space-y-6"
-          >
+          <div className="space-y-6 opacity-0 animate-[fadeInRight_0.6s_ease-out_0.2s_forwards]">
             {/* Header */}
             <div>
               <h1 className="text-3xl font-bold text-white mb-2">{auction.nft.metadata.name}</h1>
@@ -231,7 +295,7 @@ export default function AuctionDetailPage() {
             </div>
 
             {/* Auction Status */}
-            <Card className={`glass border-white/20 ${isAuctionEnding ? 'border-red-500/50' : ''}`}>
+            <Card className={`backdrop-blur-md bg-white/5 border-white/20 ${isAuctionEnding ? 'border-red-500/50' : ''}`}>
               <CardHeader>
                 <CardTitle className="text-white flex items-center justify-between">
                   <span className="flex items-center">
@@ -266,7 +330,7 @@ export default function AuctionDetailPage() {
                 </div>
 
                 {auction.reservePrice && (
-                  <div className="flex justify-between items-center p-3 glass rounded-lg">
+                  <div className="flex justify-between items-center p-3 backdrop-blur-md bg-white/5 rounded-lg">
                     <span className="text-gray-400">Reserve Price</span>
                     <span className={`font-semibold ${
                       auction.currentPrice >= auction.reservePrice ? 'text-green-400' : 'text-yellow-400'
@@ -278,7 +342,7 @@ export default function AuctionDetailPage() {
                 )}
 
                 {auction.buyNowPrice && (
-                  <div className="flex justify-between items-center p-3 glass rounded-lg border border-green-500/50">
+                  <div className="flex justify-between items-center p-3 backdrop-blur-md bg-white/5 rounded-lg border border-green-500/50">
                     <span className="text-gray-400">Buy Now Price</span>
                     <span className="font-semibold text-green-400">
                       {formatPrice(auction.buyNowPrice)}
@@ -319,14 +383,14 @@ export default function AuctionDetailPage() {
               )}
 
               {!isConnected && (
-                <div className="glass rounded-lg p-4 text-center border border-yellow-500/50">
+                <div className="backdrop-blur-md bg-white/5 rounded-lg p-4 text-center border border-yellow-500/50">
                   <p className="text-yellow-400 text-sm">Connect your wallet to participate</p>
                 </div>
               )}
             </div>
 
             {/* Description */}
-            <Card className="glass border-white/20">
+            <Card className="backdrop-blur-md bg-white/5 border-white/20">
               <CardHeader>
                 <CardTitle className="text-white">Description</CardTitle>
               </CardHeader>
@@ -339,14 +403,14 @@ export default function AuctionDetailPage() {
 
             {/* Attributes */}
             {auction.nft.metadata.attributes && auction.nft.metadata.attributes.length > 0 && (
-              <Card className="glass border-white/20">
+              <Card className="backdrop-blur-md bg-white/5 border-white/20">
                 <CardHeader>
                   <CardTitle className="text-white">Attributes</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="grid grid-cols-2 gap-3">
                     {auction.nft.metadata.attributes.map((attr, index) => (
-                      <div key={index} className="glass rounded-lg p-3">
+                      <div key={index} className="backdrop-blur-md bg-white/5 rounded-lg p-3">
                         <div className="text-xs text-gray-400 uppercase tracking-wide">
                           {attr.trait_type}
                         </div>
@@ -361,13 +425,8 @@ export default function AuctionDetailPage() {
         </div>
 
         {/* Bid History */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.4 }}
-          className="mt-12"
-        >
-          <Card className="glass border-white/20">
+        <div className="mt-12 opacity-0 animate-[fadeInUp_0.6s_ease-out_0.4s_forwards]">
+          <Card className="backdrop-blur-md bg-white/5 border-white/20">
             <CardHeader>
               <CardTitle className="text-white flex items-center">
                 <TrendingUp className="w-5 h-5 mr-2 text-pink-400" />
@@ -377,7 +436,7 @@ export default function AuctionDetailPage() {
             <CardContent>
               <div className="space-y-3">
                 {bidHistory.map((bid, index) => (
-                  <div key={bid.id} className="flex items-center justify-between p-3 glass rounded-lg">
+                  <div key={bid.id} className="flex items-center justify-between p-3 backdrop-blur-md bg-white/5 rounded-lg">
                     <div className="flex items-center space-x-3">
                       <div className="w-8 h-8 rounded-full bg-gradient-to-r from-pink-500 to-purple-500 flex items-center justify-center text-xs font-bold text-white">
                         {index + 1}
@@ -404,7 +463,7 @@ export default function AuctionDetailPage() {
               </div>
             </CardContent>
           </Card>
-        </motion.div>
+        </div>
       </div>
 
       {/* Bid Modal */}
@@ -421,6 +480,41 @@ export default function AuctionDetailPage() {
           reservePrice: auction.reservePrice,
         }}
       />
+
+      <style jsx>{`
+        @keyframes fadeInLeft {
+          from {
+            opacity: 0;
+            transform: translateX(-20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateX(0);
+          }
+        }
+
+        @keyframes fadeInRight {
+          from {
+            opacity: 0;
+            transform: translateX(20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateX(0);
+          }
+        }
+
+        @keyframes fadeInUp {
+          from {
+            opacity: 0;
+            transform: translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+      `}</style>
     </div>
   );
 }

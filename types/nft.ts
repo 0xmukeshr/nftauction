@@ -9,6 +9,7 @@ export interface NFTMetadata {
   }>;
   animation_url?: string;
   background_color?: string;
+  tokenURI?: string;
 }
 
 export interface NFT {
@@ -22,6 +23,9 @@ export interface NFT {
   isForSale: boolean;
   createdAt: Date;
   updatedAt: Date;
+  // Contract integration fields
+  contractTokenId?: string;
+  transactionHash?: string;
 }
 
 export interface NFTCollection {

@@ -12,6 +12,7 @@ import { Gavel, Clock, DollarSign, Shield, ArrowLeft, AlertCircle } from 'lucide
 import { useWallet } from '@/hooks/useWallet';
 import { useNFTStore } from '@/hooks/useNFTStore';
 import { useAuctionStore } from '@/hooks/useAuctionStore';
+import { contractService } from '@/lib/contractService';
 import { toast } from 'sonner';
 import Link from 'next/link';
 import Image from 'next/image';

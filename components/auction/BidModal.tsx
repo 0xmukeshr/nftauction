@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { X, Gavel, Clock, TrendingUp, AlertTriangle } from 'lucide-react';
 import { useWallet } from '@/hooks/useWallet';
 import { useAuctionStore } from '@/hooks/useAuctionStore';
+import { contractService } from '@/lib/contractService';
 import { toast } from 'sonner';
 import Image from 'next/image';
 import type { NFT } from '@/types/nft';

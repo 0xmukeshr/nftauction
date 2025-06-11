@@ -1,6 +1,7 @@
 'use client';
 
 import { useWallet } from '@/hooks/useWallet';
+import { useContractIntegration } from '@/hooks/useContractIntegration';
 import { Button } from '@/components/ui/button';
 import { Wallet, ChevronDown, Copy, ExternalLink, Zap } from 'lucide-react';
 import {

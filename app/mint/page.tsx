@@ -12,6 +12,7 @@ import { Switch } from '@/components/ui/switch';
 import { Upload, Image as ImageIcon, Sparkles, Plus, X, Eye, CheckCircle } from 'lucide-react';
 import { useWallet } from '@/hooks/useWallet';
 import { useNFTStore } from '@/hooks/useNFTStore';
+import { contractService } from '@/lib/contractService';
 import { toast } from 'sonner';
 import Image from 'next/image';
 import Link from 'next/link';

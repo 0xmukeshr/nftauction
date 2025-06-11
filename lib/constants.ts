@@ -1,14 +1,19 @@
-// Polkadot Asset Hub configuration
-export const POLKADOT_CONFIG = {
-  ASSET_HUB_ENDPOINT: 'wss://polkadot-asset-hub-rpc.polkadot.io',
+// Passet Hub Testnet configuration
+export const PASSET_HUB_CONFIG = {
+  RPC_ENDPOINT: 'https://testnet-passet-hub-eth-rpc.polkadot.io',
+  CHAIN_ID: 420420421,
+  NETWORK_NAME: 'PassetHub',
   CHAIN_DECIMALS: 18,
   CHAIN_TOKEN: 'PAS',
+  BLOCK_EXPLORER: 'https://blockscout-passet-hub.parity-testnet.parity.io/',
+  // Legacy compatibility
+  ASSET_HUB_ENDPOINT: 'https://testnet-passet-hub-eth-rpc.polkadot.io',
   SS58_FORMAT: 420420421,
 };
 
 // IPFS configuration
 export const IPFS_CONFIG = {
-  GATEWAY_URL: 'https://ipfs.io/ipfs/',
+  GATEWAY_URL: 'https://app.pinata.cloud/ipfs/',
   API_URL: 'https://ipfs.infura.io:5001',
   PROJECT_ID: process.env.NEXT_PUBLIC_IPFS_PROJECT_ID,
   PROJECT_SECRET: process.env.NEXT_PUBLIC_IPFS_PROJECT_SECRET,
@@ -16,12 +21,15 @@ export const IPFS_CONFIG = {
 
 // Application constants
 export const APP_CONFIG = {
-  NAME: 'Polkadot NFT Marketplace',
-  DESCRIPTION: 'Premium NFT marketplace on Polkadot Asset Hub',
+  NAME: 'Passet Hub NFT Marketplace',
+  DESCRIPTION: 'Premium NFT marketplace on Passet Hub testnet',
   DEFAULT_AUCTION_DURATION: 7 * 24, // 7 days in hours
   MIN_BID_INCREMENT: 0.1, // PAS
   TRANSACTION_TIMEOUT: 60000, // 60 seconds
 };
+
+// For backward compatibility
+export const POLKADOT_CONFIG = PASSET_HUB_CONFIG;
 
 // NFT Categories
 export const NFT_CATEGORIES = [
